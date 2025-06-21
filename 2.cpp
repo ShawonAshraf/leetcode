@@ -1,61 +1,97 @@
 #include <iostream>
-#include <string>
-#include <unordered_map>
-#include <algorithm>
+#include <vector>
 
 /**
  * @class Solution
- * @brief Contains the logic for finding the length of the longest substring
- * without repeating characters.
+ * @brief Contains the logic to solve the Add Two Numbers problem.
  */
 class Solution {
 public:
     /**
-     * @brief Calculates the length of the longest substring without repeating characters.
+     * @brief Adds two numbers represented by linked lists.
+     * The digits are stored in reverse order. This function iterates through
+     * both lists, simulating elementary school addition from right to left.
+     * A 'carry' value is maintained and propagated to the next digit.
+     * A new linked list is created to store the sum.
      *
-     * This method employs a sliding window approach. A window is a substring
-     * defined by a start and end pointer. We expand the window by moving the
-     * end pointer. If we encounter a character that is already inside our current
-     * window, we shrink the window from the left by moving the start pointer to
-     * the position right after the previous occurrence of that character.
-     *
-     * An unordered_map is used to store the last seen index of each character,
-     * allowing for O(1) average time complexity for lookups.
-     *
-     * The overall time complexity is O(n) because each character is visited at
-     * most twice (by the start and end pointers). The space complexity is O(min(m, n))
-     * where n is the length of the string and m is the size of the character set.
-     *
-     * @param s The input string.
-     * @return The length of the longest substring without repeating characters.
+     * @param l1 The head of the first linked list.
+     * @param l2 The head of the second linked list.
+     * @return The head of the resulting linked list representing the sum.
      */
-    int lengthOfLongestSubstring(std::string s) {
-        // Map to store the last seen index of each character.
-        // Key: character, Value: index in the string.
-        std::unordered_map<char, int> charIndexMap;
-        int maxLength = 0;
-        
-        // 'start' is the starting index of the current non-repeating substring (our window).
-        for (int end = 0, start = 0; end < s.length(); ++end) {
-            char currentChar = s[end];
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        // Dummy head to simplify handling of the new list's beginning.
+        ListNode* dummyHead = new ListNode(0);
+        ListNode* current = dummyHead;
+        int carry = 0;
 
-            // Check if the current character has been seen before.
-            if (charIndexMap.count(currentChar)) {
-                // If the character is found, it might be a duplicate within our window.
-                // We must move the start of our window to the right of the last
-                // occurrence of this character.
-                // We take the max with the current 'start' to ensure we don't move
-                // the window backward (in cases like "abba").
-                start = std::max(start, charIndexMap[currentChar] + 1);
-            }
+        // Loop as long as there are digits in l1, l2, or there's a carry.
+        while (l1 != nullptr || l2 != nullptr || carry != 0) {
+            // Get the value from the current node of l1, or 0 if l1 is exhausted.
+            int val1 = (l1 != nullptr) ? l1->val : 0;
+            // Get the value from the current node of l2, or 0 if l2 is exhausted.
+            int val2 = (l2 != nullptr) ? l2->val : 0;
 
-            // Update the last seen index of the current character.
-            charIndexMap[currentChar] = end;
+            // Calculate the sum of the digits plus any carry from the previous position.
+            int sum = val1 + val2 + carry;
+            // The new digit is the sum modulo 10.
+            int newDigit = sum % 10;
+            // The new carry is the integer division of the sum by 10.
+            carry = sum / 10;
 
-            // Calculate the length of the current window and update maxLength if it's larger.
-            maxLength = std::max(maxLength, end - start + 1);
+            // Create a new node with the new digit and append it to the result list.
+            current->next = new ListNode(newDigit);
+            
+            // Move all pointers forward.
+            current = current->next;
+            if (l1 != nullptr) l1 = l1->next;
+            if (l2 != nullptr) l2 = l2->next;
         }
 
-        return maxLength;
+        // The list starts after the dummy head, so we return dummyHead->next.
+        ListNode* resultHead = dummyHead->next;
+        delete dummyHead; // Clean up the dummy head node.
+        return resultHead;
     }
 };
+
+// Helper function to create a linked list from a vector of integers.
+ListNode* createLinkedList(const std::vector<int>& nums) {
+    if (nums.empty()) {
+        return nullptr;
+    }
+    ListNode* head = new ListNode(nums[0]);
+    ListNode* current = head;
+    for (size_t i = 1; i < nums.size(); ++i) {
+        current->next = new ListNode(nums[i]);
+        current = current->next;
+    }
+    return head;
+}
+
+// Helper function to print a linked list.
+void printLinkedList(ListNode* head) {
+    if (!head) {
+        std::cout << "[]" << std::endl;
+        return;
+    }
+    std::cout << "[";
+    ListNode* current = head;
+    while (current != nullptr) {
+        std::cout << current->val;
+        if (current->next != nullptr) {
+            std::cout << ",";
+        }
+        current = current->next;
+    }
+    std::cout << "]" << std::endl;
+}
+
+// Helper function to delete a linked list and free memory.
+void deleteLinkedList(ListNode* head) {
+    ListNode* current = head;
+    while (current != nullptr) {
+        ListNode* next = current->next;
+        delete current;
+        current = next;
+    }
+}
